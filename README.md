@@ -1,2 +1,1 @@
-# group3_rwa3
-Picking part from the conveyer belt.
+# Picking part from the conveyer belt.
