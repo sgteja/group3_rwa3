@@ -1,28 +1,28 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(group3_rwa3)
 
+## Compile as C++11, supported in ROS Kinetic and newer
+ add_compile_options(-std=c++14)
+
 find_package(catkin REQUIRED COMPONENTS
+  geometry_msgs
+  moveit_ros_planning_interface
   osrf_gear
   roscpp
   sensor_msgs
+  std_msgs
   std_srvs
   trajectory_msgs
-  geometry_msgs
-  moveit_msgs
-  moveit_core
-  moveit_ros_planning
-  moveit_ros_planning_interface
-  moveit_visual_tools
 )
-find_package(Eigen3 REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 # catkin_python_setup()
 
-catkin_package()
-
+catkin_package(INCLUDE_DIRS include
+  CATKIN_DEPENDS geometry_msgs moveit_ros_planning_interface osrf_gear roscpp sensor_msgs std_msgs std_srvs trajectory_msgs
+)
 ###########
 ## Build ##
 ###########
@@ -30,7 +30,7 @@ catkin_package()
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 ## Declare a C++ executable
-add_executable(ariac_example_node src/ariac_example_node.cpp)
+add_executable(ariac_example_node src/main.cpp src/order_manager.cpp src/robot_controller.cpp src/sensor.cpp)
 add_dependencies(ariac_example_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(ariac_example_node ${catkin_LIBRARIES})
 
