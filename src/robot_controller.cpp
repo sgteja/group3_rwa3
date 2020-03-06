@@ -8,7 +8,7 @@
  * Class attributes are initialized in the constructor init list
  * You can instantiate another robot by passing the correct parameter to the constructor
  */
-RobotController::RobotController(std::string arm_id) :
+RobotController::RobotController(std::string arm_id, int bin) :
 robot_controller_nh_("/ariac/"+arm_id),
 robot_controller_options("manipulator",
         "/ariac/"+arm_id+"/robot_description",
@@ -25,10 +25,11 @@ robot_move_group_(robot_controller_options) {
     robot_move_group_.allowReplanning(true);
 
 
-    //--These are joint positions used for the home position
-    // home_joint_pose_ = {0.0, 3.1, -1.1, 1.9, 3.9, 4.7, 0};
-    // home_joint_pose_ = {-1.76, 0, -2, 3.27, -0.63, -4.65, 0};
-    home_joint_pose_ = {0, 3.27, -2, -1.76, -0.63, -4.65, 0};
+    //--These are joint positions used for the home position to pick from bin
+    home_joint_pose_bin_ = {0.0, 3.1, -1.1, 1.9, 3.9, 4.7, 0};
+
+    //-- The joint positions for the home position to pick from the conveyer belt
+    home_joint_pose_conv_ = {0, 3.27, -2, -1.76, -0.63, -4.65, 0};
 
 
     //-- offset used for picking up parts
@@ -39,7 +40,7 @@ robot_move_group_(robot_controller_options) {
     gripper_subscriber_ = gripper_nh_.subscribe(
             "/ariac/arm1/gripper/state", 10, &RobotController::GripperCallback, this);
 
-    SendRobotHome();
+    SendRobotHome(bin);
 
     robot_tf_listener_.waitForTransform("arm1_linear_arm_actuator", "arm1_ee_link",
                                             ros::Time(0), ros::Duration(10));
@@ -55,8 +56,12 @@ robot_move_group_(robot_controller_options) {
     tf::quaternionMsgToTF(fixed_orientation_,q);
     tf::Matrix3x3(q).getRPY(roll_def_,pitch_def_,yaw_def_);
 
-
-    end_position_ = home_joint_pose_;
+    if (bin==1) {
+        end_position_ = home_joint_pose_bin_;
+    }
+    else {
+        end_position_ = home_joint_pose_conv_;
+    }
     end_position_[0] = 2.2;
 //    end_position_[1] = 4.5;
 //    end_position_[2] = 1.2;
@@ -163,9 +168,14 @@ void RobotController::GoToTarget(
 //    }
 }
 
-void RobotController::SendRobotHome() {
+void RobotController::SendRobotHome(int bin) {
     // ros::Duration(2.0).sleep();
-    robot_move_group_.setJointValueTarget(home_joint_pose_);
+    if (bin==1) {
+        robot_move_group_.setJointValueTarget(home_joint_pose_bin_);
+    }
+    else {
+        robot_move_group_.setJointValueTarget(home_joint_pose_conv_);
+    }
     // this->execute();
     ros::AsyncSpinner spinner(4);
     spinner.start();
@@ -256,28 +266,28 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose) {
     if (gripper_state_){//--while the part is still attached to the gripper
         //--move the robot to the end of the rail
          ROS_INFO_STREAM("Moving towards AGV1...");
-         robot_move_group_.setJointValueTarget(end_position_);
-         this->Execute();
-         ros::Duration(1.0).sleep();
-         ROS_INFO_STREAM("Actuating the gripper...");
-         this->GripperToggle(false);
+         // robot_move_group_.setJointValueTarget(end_position_);
+         // this->Execute();
+         // ros::Duration(1.0).sleep();
+         // ROS_INFO_STREAM("Actuating the gripper...");
+         // this->GripperToggle(false);
 
-//        auto temp_pose = part_pose;
-//        temp_pose.position.z += 0.5;
-//        this->GoToTarget({temp_pose, part_pose});
-//        ros::Duration(5).sleep();
+       auto temp_pose = part_pose;
+       temp_pose.position.z += 0.5;
+       this->GoToTarget({temp_pose, part_pose});
+       ros::Duration(5).sleep();
+       ros::spinOnce();
+//
+//
+       ROS_INFO_STREAM("Actuating the gripper...");
+       this->GripperToggle(false);
+//
 //        ros::spinOnce();
-//
-//
-//        ROS_INFO_STREAM("Actuating the gripper...");
-//        this->GripperToggle(false);
-//
-//        ros::spinOnce();
-//        if (!gripper_state_) {
-//            ROS_INFO_STREAM("Going to home position...");
-//            this->GoToTarget({temp_pose, home_cart_pose_});
-//            ros::Duration(3.0).sleep();
-//        }
+       // if (!gripper_state_) {
+           // ROS_INFO_STREAM("Going to home position...");
+           // this->GoToTarget({temp_pose, home_cart_pose_});
+           // ros::Duration(3.0).sleep();
+       // }
     }
 
     drop_flag_ = false;

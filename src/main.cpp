@@ -1,4 +1,5 @@
 #include <osrf_gear/AGVControl.h>
+#include <osrf_gear/ConveyorBeltControl.h>
 #include <ros/ros.h>
 #include <std_srvs/Trigger.h>
 #include <tf/tf.h>
@@ -70,7 +71,19 @@ int main(int argc, char **argv) {
     ROS_INFO("Setup complete.");
 
 
-    StartCompetition(node);
+    // StartCompetition(node);
+    //todo RWA-3 remove this later, stopping conveyer belt    
+    // ros::ServiceClient conv_client = 
+    //         node.serviceClient<osrf_gear::ConveyorBeltControl>("/ariac/conveyor/control");
+    // if (!conv_client.exists()){
+    //     conv_client.waitForExistence();
+    // }
+    // osrf_gear::ConveyorBeltControl beltControl;
+    // beltControl.request.power = 0.0;
+    // conv_client.call(beltControl);
+    // if (beltControl.response.success){
+    //     ROS_INFO("Conveyor stopped");
+    // }
     ros::Duration(2.0).sleep();
     //manager.SetScannedProducts();
     manager.ExecuteOrder();

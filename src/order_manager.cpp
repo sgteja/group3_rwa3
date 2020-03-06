@@ -10,7 +10,7 @@
 
 
 //AriacOrderManager::AriacOrderManager(): arm1_{"arm1"}, arm2_{"arm2"}
-AriacOrderManager::AriacOrderManager(): arm1_{"arm1"}
+AriacOrderManager::AriacOrderManager(): arm1_{"arm1", 0}
 {
     order_subscriber_ = order_manager_nh_.subscribe(
             "/ariac/orders", 10,
@@ -48,10 +48,16 @@ std::string AriacOrderManager::GetProductFrame(std::string product_type) {
 bool AriacOrderManager::PickAndPlace(const std::pair<std::string,geometry_msgs::Pose> product_type_pose, int agv_id) {
     std::string product_type = product_type_pose.first;
     ROS_WARN_STREAM("Product type >>>> " << product_type);
-    std::string product_frame = this->GetProductFrame(product_type);
-    ROS_WARN_STREAM("Product frame >>>> " << product_frame);
-    auto part_pose = camera_.GetPartPose("/world",product_frame);
+    // std::string product_frame = this->GetProductFrame(product_type);
+    // ROS_WARN_STREAM("Product frame >>>> " << product_frame);
+    //todo RWA-3 
+    // auto part_pose = camera_.GetPartPose("/world",product_frame);
 
+    //todo RWA-3 get this position from sensor data
+    geometry_msgs::Pose part_pose;
+    part_pose.position.x = 1.21;
+    part_pose.position.y = 0.816;
+    part_pose.position.z = 0.9477;
 
     if(product_type == "pulley_part")
         part_pose.position.z += 0.08;
@@ -60,8 +66,10 @@ bool AriacOrderManager::PickAndPlace(const std::pair<std::string,geometry_msgs::
     ROS_WARN_STREAM("Picking up state " << failed_pick);
     ros::Duration(0.5).sleep();
 
+    
+
     while(!failed_pick){
-        auto part_pose = camera_.GetPartPose("/world",product_frame);
+        // auto part_pose = camera_.GetPartPose("/world",product_frame);
         failed_pick = arm1_.PickPart(part_pose);
     }
 
@@ -121,15 +129,17 @@ void AriacOrderManager::ExecuteOrder() {
             ROS_INFO_STREAM("Order ID: " << order_id);
             ROS_INFO_STREAM("Shipment Type: " << shipment_type);
             ROS_INFO_STREAM("AGV ID: " << agv_id);
-            // for (const auto &product: products){
-                // ros::spinOnce();
-                // product_type_pose_.first = product.type;
-                //ROS_INFO_STREAM("Product type: " << product_type_pose_.first);
-                // product_type_pose_.second = product.pose;
-                // ROS_INFO_STREAM("Product pose: " << product_type_pose_.second.position.x);
-                // pick_n_place_success =  PickAndPlace(product_type_pose_, agv_id);
-                //--todo: What do we do if pick and place fails?
-            // }
+            for (const auto &product: products){
+                ros::spinOnce();
+                product_type_pose_.first = product.type;
+                ROS_INFO_STREAM("Product type: " << product_type_pose_.first);
+                product_type_pose_.second = product.pose;
+                ROS_INFO_STREAM("Product pose: " << product_type_pose_.second.position.x);
+                if (product_type_pose_.first == "piston_rod_part") {
+                    pick_n_place_success =  PickAndPlace(product_type_pose_, agv_id);
+                }
+                // --todo: What do we do if pick and place fails?
+            }
             SubmitAGV(1);
             ROS_INFO_STREAM("Submitting AGV 1");
             int finish=1;

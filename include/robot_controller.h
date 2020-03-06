@@ -22,13 +22,13 @@
 
 class RobotController {
 public:
-    RobotController(std::string arm_id);
+    RobotController(std::string arm_id, int bin);
     ~RobotController();
     bool Planner();
     void Execute();
     void GoToTarget(std::initializer_list<geometry_msgs::Pose> list);
     void GoToTarget(const geometry_msgs::Pose& pose);
-    void SendRobotHome();
+    void SendRobotHome(int bin);
     bool DropPart(geometry_msgs::Pose pose);
     void GripperToggle(const bool& state);
     void GripperCallback(const osrf_gear::VacuumGripperState::ConstPtr& grip);
@@ -57,7 +57,8 @@ private:
 
     std::string object;
     bool plan_success_;
-    std::vector<double> home_joint_pose_;
+    std::vector<double> home_joint_pose_conv_;
+    std::vector<double> home_joint_pose_bin_;
     geometry_msgs::Pose home_cart_pose_;
     geometry_msgs::Quaternion fixed_orientation_;
     geometry_msgs::Pose agv_position_;
