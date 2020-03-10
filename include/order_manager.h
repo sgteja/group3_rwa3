@@ -15,6 +15,7 @@
 
 #include "sensor.h"
 #include "robot_controller.h"
+#include "conveyor_controller.h"
 
 class AriacOrderManager {
 public:
@@ -32,6 +33,7 @@ private:
     ros::Subscriber order_subscriber_;
     std::vector<osrf_gear::Order> received_orders_;
     AriacSensorManager camera_;
+    AriacConveyorManager convBelt_;
     RobotController arm1_;
 //    RobotController arm2_;
     tf::TransformListener part_tf_listener_;

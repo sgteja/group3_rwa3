@@ -24,12 +24,16 @@ robot_move_group_(robot_controller_options) {
     // robot_move_group_.setEndEffector("moveit_ee");
     robot_move_group_.allowReplanning(true);
 
+    //-- The order of joints positions is as follows
+    // ['linear_arm_actuator_joint',  'shoulder_pan_joint', 'shoulder_lift_joint', 
+    // 'elbow_joint', 'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
 
     //--These are joint positions used for the home position to pick from bin
     home_joint_pose_bin_ = {0.0, 3.1, -1.1, 1.9, 3.9, 4.7, 0};
 
     //-- The joint positions for the home position to pick from the conveyer belt
-    home_joint_pose_conv_ = {0, 3.27, -2, -1.76, -0.63, -4.65, 0};
+    // home_joint_pose_conv_ = {0, 3.27, -2, -1.76, -0.88, -4.65, 0};
+    home_joint_pose_conv_ = {0, 3.27, -2.38, -1.76, -0.63, -4.65, 0};
 
 
     //-- offset used for picking up parts
@@ -156,13 +160,13 @@ void RobotController::GoToTarget(
             robot_move_group_.computeCartesianPath(waypoints, 0.01, 0.0, traj, true);
 
     ROS_WARN_STREAM("Fraction: " << fraction * 100);
-    ros::Duration(5.0).sleep();
+    ros::Duration(2.0).sleep();
 
     robot_planner_.trajectory_ = traj;
 
     //if (fraction >= 0.3) {
         robot_move_group_.execute(robot_planner_);
-        ros::Duration(5.0).sleep();
+        ros::Duration(2.0).sleep();
 //    } else {
 //        ROS_ERROR_STREAM("Safe Trajectory not found!");
 //    }
@@ -275,7 +279,7 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose) {
        auto temp_pose = part_pose;
        temp_pose.position.z += 0.5;
        this->GoToTarget({temp_pose, part_pose});
-       ros::Duration(5).sleep();
+       ros::Duration(2).sleep();
        ros::spinOnce();
 //
 //

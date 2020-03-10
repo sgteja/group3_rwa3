@@ -30,7 +30,7 @@ catkin_package(INCLUDE_DIRS include
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 ## Declare a C++ executable
-add_executable(ariac_example_node src/main.cpp src/order_manager.cpp src/robot_controller.cpp src/sensor.cpp)
+add_executable(ariac_example_node src/main.cpp src/order_manager.cpp src/robot_controller.cpp src/sensor.cpp src/conveyor_controller.cpp)
 add_dependencies(ariac_example_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(ariac_example_node ${catkin_LIBRARIES})
 

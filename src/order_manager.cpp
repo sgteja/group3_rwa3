@@ -34,15 +34,16 @@ void AriacOrderManager::OrderCallback(const osrf_gear::Order::ConstPtr& order_ms
  */
 std::string AriacOrderManager::GetProductFrame(std::string product_type) {
     //--Grab the last one from the list then remove it
-    ROS_INFO("Inside GetProductFrame");
+    // ROS_INFO("Inside GetProductFrame");
     if (!product_frame_list_.empty()) {
         std::string frame = product_frame_list_[product_type].back();
         ROS_INFO_STREAM("Frame >>>> " << frame);
         product_frame_list_[product_type].pop_back();
         return frame;
     } else {
-        ROS_ERROR_STREAM("No product frame found for " << product_type);
-        ros::shutdown();
+        // ROS_ERROR_STREAM("No product frame found for " << product_type);
+        // ros::shutdown();
+        return "-1";
     }
 }
 
@@ -50,6 +51,25 @@ bool AriacOrderManager::PickAndPlace(const std::pair<std::string,geometry_msgs::
     std::string product_type = product_type_pose.first;
     ROS_INFO("Inside Pick and Place");
     ROS_WARN_STREAM("Product type >>>> " << product_type);
+    while(this->GetProductFrame(product_type)=="-1"){
+        ros::spinOnce();
+        ros::Duration(1).sleep();
+        ROS_ERROR_STREAM_THROTTLE(20,"Waiting for product to arrive");
+        if(camera_.get_break_beam_status(2)){
+            convBelt_.setConveyorPower(0.0);
+            ros::spinOnce();
+            ros::Duration(2.0).sleep();
+            product_frame_list_ = camera_.get_product_frame_list();    
+            if (this->GetProductFrame(product_type)!="-1"){
+                break;
+            }
+            convBelt_.setConveyorPower(100.0);
+        }
+        product_frame_list_ = camera_.get_product_frame_list();    
+
+    }
+    
+    
     std::string product_frame = this->GetProductFrame(product_type);
     ROS_WARN_STREAM("Product frame >>>> " << product_frame);
     // todo RWA-3
@@ -63,17 +83,21 @@ bool AriacOrderManager::PickAndPlace(const std::pair<std::string,geometry_msgs::
 
     if(product_type == "pulley_part")
         part_pose.position.z += 0.08;
+    // part_pose.position.y = 2.39;
     //--task the robot to pick up this part
     bool failed_pick = arm1_.PickPart(part_pose);
     ROS_WARN_STREAM("Picking up state " << failed_pick);
-    ros::Duration(0.5).sleep();
+    // ros::Duration(0.5).sleep();
 
 
 
-    while(!failed_pick){
+    while((!failed_pick)){
         // auto part_pose = camera_.GetPartPose("/world",product_frame);
         failed_pick = arm1_.PickPart(part_pose);
     }
+
+    convBelt_.setConveyorPower(100.0);
+
 
     //--get the pose of the object in the tray from the order
     geometry_msgs::Pose drop_pose = product_type_pose.second;
@@ -101,13 +125,15 @@ bool AriacOrderManager::PickAndPlace(const std::pair<std::string,geometry_msgs::
     }
     auto result = arm1_.DropPart(StampedPose_out.pose);
 
+    arm1_.SendRobotHome(0);
+
     return result;
 }
 
 
 void AriacOrderManager::ExecuteOrder() {
     ROS_WARN(">>>>>> Executing order...");
-    //scanned_objects_ = camera_.GetParts();
+    // scanned_objects_ = camera_.GetParts();
 
     //-- used to check if pick and place was successful
     bool pick_n_place_success{false};
@@ -115,7 +141,7 @@ void AriacOrderManager::ExecuteOrder() {
 
     ros::spinOnce();
     ros::Duration(1.0).sleep();
-    product_frame_list_ = camera_.get_product_frame_list();
+    // product_frame_list_ = camera_.get_product_frame_list();
     for (const auto &order:received_orders_){
         auto order_id = order.order_id;
         auto shipments = order.shipments;
@@ -136,8 +162,9 @@ void AriacOrderManager::ExecuteOrder() {
                 ROS_INFO_STREAM("Product type: " << product_type_pose_.first);
                 product_type_pose_.second = product.pose;
                 ROS_INFO_STREAM("Product pose: " << product_type_pose_.second.position.x);
-                if (product_type_pose_.first == "gear_part") {
+                if (product_type_pose_.first == "gear_part"){
                     pick_n_place_success =  PickAndPlace(product_type_pose_, agv_id);
+                    break;
                 }
                 // --todo: What do we do if pick and place fails?
 
