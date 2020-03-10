@@ -23,9 +23,10 @@ public:
     ~AriacOrderManager();
     void OrderCallback(const osrf_gear::Order::ConstPtr& order_msg);
     void ExecuteOrder();
-    std::string GetProductFrame(std::string product_type);
+    std::string GetProductFrame(std::string product_type, bool conv);
     std::map<std::string, std::list<std::pair<std::string,geometry_msgs::Pose>>> GetOrder();
     bool PickAndPlace(std::pair<std::string,geometry_msgs::Pose> object_prop,int agvnum);
+    bool PickAndPlaceFromConv(std::pair<std::string,geometry_msgs::Pose> object_prop,int agvnum);
     void SubmitAGV(int num);
 
 private:
@@ -40,6 +41,7 @@ private:
     std::pair<std::string,geometry_msgs::Pose> product_type_pose_;
     std::string object;
     std::map<std::string, std::vector<std::string>> product_frame_list_;
+    std::map<std::string, std::vector<std::string>> product_frame_list_conv_;
     osrf_gear::Order order_;
 };
 

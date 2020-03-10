@@ -76,12 +76,12 @@ int main(int argc, char **argv) {
     //manager.SetScannedProducts();
     manager.ExecuteOrder();
 
-    ros::spin();  // This executes callbacks on new data until ctrl-c.
+    // ros::spin();  // This executes callbacks on new data until ctrl-c.
 
     //manager.ExecuteOrder();
-    //EndCompetition(node);
+    EndCompetition(node);
 
-    // ROS_WARN_STREAM("Killing the node....");
+    ROS_WARN_STREAM("Killing the node....");
 
     return 0;
 }

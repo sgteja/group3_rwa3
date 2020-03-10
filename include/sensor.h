@@ -30,8 +30,13 @@ public:
 
     geometry_msgs::Pose GetPartPose(const std::string& src_frame,
                                     const std::string& target_frame);
+    geometry_msgs::Pose GetPartPoseFromConv(const std::string& src_frame,
+                                    const std::string& target_frame);
     std::map<std::string, std::vector<std::string>> get_product_frame_list(){
         return product_frame_list_;
+    }
+    std::map<std::string, std::vector<std::string>> get_product_frame_list_conv(){
+        return product_frame_list_conv_;
     }
     //void ScanParts(int cam_number);
     void BuildProductFrames(int);
@@ -42,6 +47,13 @@ public:
             return break_beam_1_;
         else
             return break_beam_2_;
+    }
+
+    int get_break_beam_trig_counter(int id){
+        if (id ==1)
+            return break_beam_1_trig_counter_;
+        else
+            return break_beam_2_trig_counter_;
     }
 
     // void reset();
@@ -70,8 +82,10 @@ private:
 
     std::map<std::string, std::list<std::string>> parts_list_;
     std::map<std::string, std::vector<std::string>> product_frame_list_;
+    std::map<std::string, std::vector<std::string>> product_frame_list_conv_;
 
     bool init_, cam_1_, cam_2_,cam_3_, cam_4_, break_beam_1_, break_beam_2_;
     // int camera4_frame_counter_;
-    int camera1_frame_counter_, camera2_frame_counter_, camera3_frame_counter_, camera4_frame_counter_;
+    int camera1_frame_counter_, camera2_frame_counter_, camera3_frame_counter_, camera4_frame_counter_,
+        break_beam_1_trig_counter_, break_beam_2_trig_counter_;
 };

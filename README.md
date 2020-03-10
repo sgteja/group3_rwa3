@@ -26,6 +26,8 @@ TO DO
 [] Conveyor belt has to be stopped when gear part is detected by the logical camera 4
 [] Record the video~~
 
-Approach 2 - Not stopping the conveyor belt
+~~Approach 2 - Not stopping the conveyor belt
 [] Predict where the gear part will be after detected by the Logical camera 4
-[] Record the video
+[] Record the video~~
+
+If interested in doing something, can make a improvement to complete the order by picking the parts from the bins.

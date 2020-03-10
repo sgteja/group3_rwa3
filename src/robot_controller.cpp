@@ -33,7 +33,7 @@ robot_move_group_(robot_controller_options) {
 
     //-- The joint positions for the home position to pick from the conveyer belt
     // home_joint_pose_conv_ = {0, 3.27, -2, -1.76, -0.88, -4.65, 0};
-    home_joint_pose_conv_ = {0, 3.27, -2.38, -1.76, -0.63, -4.65, 0};
+    home_joint_pose_conv_ = {0, 3.27, -2.38, -1.76, -0.55, -4.65, 0};
 
 
     //-- offset used for picking up parts
@@ -160,13 +160,13 @@ void RobotController::GoToTarget(
             robot_move_group_.computeCartesianPath(waypoints, 0.01, 0.0, traj, true);
 
     ROS_WARN_STREAM("Fraction: " << fraction * 100);
-    ros::Duration(2.0).sleep();
+    ros::Duration(0.5).sleep();
 
     robot_planner_.trajectory_ = traj;
 
     //if (fraction >= 0.3) {
         robot_move_group_.execute(robot_planner_);
-        ros::Duration(2.0).sleep();
+        ros::Duration(0.5).sleep();
 //    } else {
 //        ROS_ERROR_STREAM("Safe Trajectory not found!");
 //    }
@@ -328,6 +328,27 @@ bool RobotController::PickPart(geometry_msgs::Pose& part_pose) {
         ros::spinOnce();
     }
 
+    ROS_INFO_STREAM("Going to waypoint...");
+    this->GoToTarget(temp_pose_1);
+    return gripper_state_;
+}
+
+bool RobotController::PickPartFromConv(geometry_msgs::Pose& part_pose) {
+    // gripper_state = false;
+    // pick = true;
+    //ROS_INFO_STREAM("fixed_orientation_" << part_pose.orientation = fixed_orientation_);
+    //ROS_WARN_STREAM("Picking the part...");
+    ROS_INFO_STREAM("Moving to part...");
+    // part_pose.position.z = part_pose.position.z + offset_;
+    
+
+    // this->GoToTarget(part_pose);
+    ROS_INFO_STREAM("Actuating the gripper..." << part_pose.position.z);
+    this->GripperToggle(true);
+    ros::spinOnce();
+
+    auto temp_pose_1 = part_pose;
+    temp_pose_1.position.z += 0.3;
     ROS_INFO_STREAM("Going to waypoint...");
     this->GoToTarget(temp_pose_1);
     return gripper_state_;

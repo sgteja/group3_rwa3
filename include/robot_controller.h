@@ -34,6 +34,7 @@ public:
     void GripperCallback(const osrf_gear::VacuumGripperState::ConstPtr& grip);
     void GripperStateCheck(geometry_msgs::Pose pose);
     bool PickPart(geometry_msgs::Pose& part_pose);
+    bool PickPartFromConv(geometry_msgs::Pose& part_pose);
 
 private:
     ros::NodeHandle robot_controller_nh_;
